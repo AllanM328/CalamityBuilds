@@ -1,5 +1,6 @@
 # CalamityBuilds
 
+# NOT COMPLETE YET*
 Simple Calamity addon that removes the hassle of constantly alt-tabing for builds and item recommendations by appending a 'Recommended for: ' tooltip to recommended class weapons and armor for your current boss
 
 The recommendations are pulled from https://calamitymod.wiki.gg/wiki/Guide:Class_setups
