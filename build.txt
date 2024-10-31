@@ -1,0 +1,4 @@
+displayName = CalamityBuilds
+author = NubBlub
+modReferences = CalamityMod
+version = 0.20.2

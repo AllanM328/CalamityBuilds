@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "W8klLyPJrm0=",
+  "success": true,
+  "projectFilePath": "C:\\Users\\capta\\OneDrive\\Documents\\My Games\\Terraria\\tModLoader\\ModSources\\CalamityBuilds\\CalamityBuilds.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\capta\\.nuget\\packages\\tmodloader.codeassist\\0.1.5\\tmodloader.codeassist.0.1.5.nupkg.sha512"
+  ],
+  "logs": []
+}
