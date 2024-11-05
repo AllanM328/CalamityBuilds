@@ -11,6 +11,7 @@ The recommendations are pulled from https://calamitymod.wiki.gg/wiki/Guide:Class
 ## Planned Features
 
 - UI interface
+- Track your progression stage and filter accordingly
 - Be able to choose class to filter unneccesarry items
 - Additional comments to items (i.e. "Favorable for Higher DPS")
 
