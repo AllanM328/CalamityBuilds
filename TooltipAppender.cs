@@ -7,114 +7,204 @@ using Terraria.ModLoader;
 
 public class TooltipAppender : GlobalItem
 {
-    // Ensure each instance of TooltipAppender has its own data by setting InstancePerEntity to true
     public override bool InstancePerEntity => true;
 
-    // Dictionary to hold item recommendations data by item name
+    private static Dictionary<string, (string ModName, string ProgressionStage)> bossData = new Dictionary<string, (string, string)>();
     private static Dictionary<string, Dictionary<string, string>> itemRecommendations = new Dictionary<string, Dictionary<string, string>>();
 
-    // Load CSV data when the mod initializes
     public override void Load()
     {
         LoadItemRecommendations();
+        LoadBossData();
         Mod.Logger.Info("Load completed. Total items loaded into dictionary: " + itemRecommendations.Count);
     }
 
-    // Method to load recommendations from the CSV file
     private void LoadItemRecommendations()
-{
-    // Get the path to the CSV file
-    string filePath = "items.csv";
-
-    // Confirm the file path
-    Mod.Logger.Info("Attempting to load items.csv from: " + filePath);
-
-    if (Mod.FileExists(filePath))
     {
-        Mod.Logger.Info("items.csv found. Loading recommendations...");
+        string filePath = "items.csv";
 
-        using (StreamReader reader = new StreamReader(Mod.GetFileStream(filePath)))
+        Mod.Logger.Info("Attempting to load items.csv from: " + filePath);
+
+        if (Mod.FileExists(filePath))
         {
-            reader.ReadLine(); // Skip the header
+            Mod.Logger.Info("items.csv found. Loading recommendations...");
 
-            string line;
-            while ((line = reader.ReadLine()) != null)
+            using (StreamReader reader = new StreamReader(Mod.GetFileStream(filePath)))
             {
-                Mod.Logger.Info("Reading line: " + line);
-                string[] parts = line.Split(',');
+                reader.ReadLine(); // Skip the header
 
-                if (parts.Length == 4)
+                string line;
+                while ((line = reader.ReadLine()) != null)
                 {
-                    string itemName = parts[0].Trim();
-                    string recommendation = parts[1].Trim();
-                    string progressionStage = parts[2].Trim();
-                    string itemClass = parts[3].Trim();
+                    Mod.Logger.Info("Reading line: " + line);
+                    string[] parts = line.Split(',');
 
-                    var recommendationData = new Dictionary<string, string>
+                    if (parts.Length >= 3)  // Adjusted to ignore the ProgressionStage column
                     {
-                        { "Recommendation", recommendation },
-                        { "ProgressionStage", progressionStage },
-                        { "Class", itemClass }
-                    };
+                        string itemName = parts[0].Trim();
+                        string recommendation = parts[1].Trim();
+                        string itemClass = parts[2].Trim();
 
-                    itemRecommendations[itemName] = recommendationData;
-                    Mod.Logger.Info($"Added to dictionary - Name: {itemName}, Recommendation: {recommendation}");
+                        var recommendationData = new Dictionary<string, string>
+                        {
+                            { "Recommendation", recommendation },
+                            { "Class", itemClass }
+                        };
+
+                        itemRecommendations[itemName] = recommendationData;
+                        Mod.Logger.Info($"Added to dictionary - Name: {itemName}, Recommendation: {recommendation}");
+                    }
+                    else
+                    {
+                        Mod.Logger.Warn($"Skipping malformed line: {line}");
+                    }
                 }
-                else
+            }
+        }
+        else
+        {
+            Mod.Logger.Warn("Could not find items.csv");
+        }
+    }
+
+    private void LoadBossData()
+    {
+        string filePath = "bosses.csv";
+
+        if (Mod.FileExists(filePath))
+        {
+            using (StreamReader reader = new StreamReader(Mod.GetFileStream(filePath)))
+            {
+                reader.ReadLine(); // Skip the header
+
+                string line;
+                while ((line = reader.ReadLine()) != null)
                 {
-                    Mod.Logger.Warn($"Skipping malformed line: {line}");
+                    string[] parts = line.Split(',');
+
+                    if (parts.Length >= 3)
+                    {
+                        string bossName = parts[0].Trim();
+                        string modName = parts[1].Trim();
+                        string progressionStage = parts[2].Trim();
+
+                        bossData[bossName] = (modName, progressionStage);
+                    }
                 }
             }
         }
     }
-    else
+
+    private bool IsBossDefeated(string bossName)
+{
+    if (bossData.TryGetValue(bossName, out var bossInfo))
     {
-        Mod.Logger.Warn("Could not find items.csv");
+        string modName = bossInfo.ModName;
+        
+        if (modName == "Terraria")
+        {
+            // Check vanilla bosses using NPC.downed flags
+            return bossName switch
+            {
+                "Eye of Cthulhu" => NPC.downedBoss1,
+                "Eater of Worlds" => NPC.downedBoss2,
+                "Brain of Cthulhu" => NPC.downedBoss2,
+                "Skeletron" => NPC.downedBoss3,
+                "Wall of Flesh" => Main.hardMode,
+                "Destroyer" => NPC.downedMechBoss1,
+                "Twins" => NPC.downedMechBoss2,
+                "Skeletron Prime" => NPC.downedMechBoss3,
+                "Plantera" => NPC.downedPlantBoss,
+                "Golem" => NPC.downedGolemBoss,
+                "Lunatic Cultist" => NPC.downedAncientCultist,
+                "Moon Lord" => NPC.downedMoonlord,
+                _ => false
+            };
+        }
+        else if (modName == "Calamity")
+        {
+            // Check Calamity bosses dynamically using Mod.Call
+            Mod calamityMod = ModLoader.GetMod("CalamityMod");
+            if (calamityMod != null)
+            {
+                return calamityMod.Call("GetBossDowned", bossName) as bool? == true;
+            }
+        }
     }
-    // Log final dictionary contents
-    Mod.Logger.Info("Final dictionary contents:");
-    foreach (var key in itemRecommendations.Keys)
-    {
-        Mod.Logger.Info($"Dictionary contains item: {key}");
-    }
+    return false;
 }
 
 
+    private string GetCurrentProgressionStage()
+    {
+        string currentStage = "Pre-Boss";
+        int mechanicalBossCount = 0;
+        int calamityBossCount = 0;
 
+        bool destroyerDefeated = IsBossDefeated("Destroyer");
+        bool twinsDefeated = IsBossDefeated("Twins");
+        bool skeletronPrimeDefeated = IsBossDefeated("Skeletron Prime");
 
-    // Modify tooltips based on CSV data
+        if (destroyerDefeated) mechanicalBossCount++;
+        if (twinsDefeated) mechanicalBossCount++;
+        if (skeletronPrimeDefeated) mechanicalBossCount++;
+
+        if (mechanicalBossCount == 1)
+        {
+            currentStage = "Post-Mechanical Boss 1";
+        }
+        else if (mechanicalBossCount == 2)
+        {
+            currentStage = "Post-Mechanical Boss 2";
+        }
+        else if (mechanicalBossCount == 3)
+        {
+            currentStage = "Pre-Plantera";
+        }
+
+        bool exoMechsDefeated = IsBossDefeated("Exo Mechs");
+        bool supremeCalamitasDefeated = IsBossDefeated("Supreme Witch, Calamitas");
+
+        if (exoMechsDefeated) calamityBossCount++;
+        if (supremeCalamitasDefeated) calamityBossCount++;
+
+        if (calamityBossCount == 1)
+        {
+            currentStage = "Pre-Exo Mechs/Supreme Witch, Calamitas";
+        }
+        else if (calamityBossCount == 2)
+        {
+            currentStage = "Endgame";
+        }
+
+        foreach (var boss in bossData)
+        {
+            string bossName = boss.Key;
+            string progressionStage = boss.Value.ProgressionStage;
+
+            if (bossName == "Destroyer" || bossName == "Twins" || bossName == "Skeletron Prime" || bossName == "Exo Mechs" || bossName == "Supreme Witch, Calamitas")
+                continue;
+
+            if (IsBossDefeated(bossName) && currentStage != "Pre-Exo Mechs/Supreme Witch, Calamitas" && currentStage != "Endgame")
+            {
+                currentStage = progressionStage;
+            }
+        }
+
+        return currentStage;
+    }
+
     public override void ModifyTooltips(Item item, List<TooltipLine> tooltips)
     {
-        Mod.Logger.Info("ModifyTooltips called. Current dictionary count: " + itemRecommendations.Count);
-
-        // Use item.Name for dictionary lookup
-        string itemName = item.Name;
-        Mod.Logger.Info($"Checking item: {itemName}");
-
-        if (itemRecommendations.TryGetValue(itemName, out var recommendationData))
+        if (itemRecommendations.TryGetValue(item.Name, out var recommendationData))
         {
-            Mod.Logger.Info($"Found matching entry in dictionary for item: {itemName}");
-
             string recommendation = recommendationData["Recommendation"];
-            string progression = recommendationData["ProgressionStage"];
+            string currentProgression = GetCurrentProgressionStage();
             string itemClass = recommendationData["Class"];
 
-            string tooltipText = $"{recommendation} (Progression: {progression}, Class: {itemClass})";
+            string tooltipText = $"{recommendation} (Progression: {currentProgression}, Class: {itemClass})";
             TooltipLine line = new TooltipLine(Mod, "Recommended", tooltipText);
             tooltips.Add(line);
-            Mod.Logger.Info($"Tooltip added for item: {itemName}");
-        }
-        else
-        {
-            Mod.Logger.Warn($"No tooltip found for item: {itemName}");
         }
     }
-
-
-
-
-
-
 }
-
-

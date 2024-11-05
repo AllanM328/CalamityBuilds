@@ -12,7 +12,8 @@ The recommendations are pulled from https://calamitymod.wiki.gg/wiki/Guide:Class
 
 - UI interface
 - Be able to choose class to filter unneccesarry items
-- Additional comments to items (i.e. "Favorable for Higher DPS")
+- Additional comments to items (i.e. "Favorable for Higher DPS", "Used with X accessory", etc.)
+- Dynamically change the progression stage in the tooltip/UI
 
 
 # License
