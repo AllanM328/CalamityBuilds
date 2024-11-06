@@ -4,6 +4,7 @@ using System.IO;
 using CalamityBuilds;
 using Terraria;
 using Terraria.ModLoader;
+using Microsoft.VisualBasic.FileIO;
 
 public class TooltipAppender : GlobalItem
 {
@@ -30,33 +31,33 @@ public class TooltipAppender : GlobalItem
             Mod.Logger.Info("items.csv found. Loading recommendations...");
 
             using (StreamReader reader = new StreamReader(Mod.GetFileStream(filePath)))
+            using (TextFieldParser parser = new TextFieldParser(reader))
             {
-                reader.ReadLine(); // Skip the header
+                parser.TextFieldType = FieldType.Delimited;
+                parser.SetDelimiters(",");
 
-                string line;
-                while ((line = reader.ReadLine()) != null)
+                parser.ReadLine(); // Skips the header
+
+                while (!parser.EndOfData)
                 {
-                    Mod.Logger.Info("Reading line: " + line);
-                    string[] parts = line.Split(',');
+                    string[] parts = parser.ReadFields();
 
-                    if (parts.Length >= 3)  // Adjusted to ignore the ProgressionStage column
+                    if (parts.Length >= 4) 
                     {
                         string itemName = parts[0].Trim();
                         string recommendation = parts[1].Trim();
                         string itemClass = parts[2].Trim();
+                        string comment = parts[3].Trim();
 
                         var recommendationData = new Dictionary<string, string>
                         {
                             { "Recommendation", recommendation },
-                            { "Class", itemClass }
+                            { "Class", itemClass },
+                            { "Comment", comment }
                         };
 
                         itemRecommendations[itemName] = recommendationData;
                         Mod.Logger.Info($"Added to dictionary - Name: {itemName}, Recommendation: {recommendation}");
-                    }
-                    else
-                    {
-                        Mod.Logger.Warn($"Skipping malformed line: {line}");
                     }
                 }
             }
@@ -74,13 +75,16 @@ public class TooltipAppender : GlobalItem
         if (Mod.FileExists(filePath))
         {
             using (StreamReader reader = new StreamReader(Mod.GetFileStream(filePath)))
+            using (TextFieldParser parser = new TextFieldParser(reader))
             {
-                reader.ReadLine(); // Skip the header
+                parser.TextFieldType = FieldType.Delimited;
+                parser.SetDelimiters(",");
 
-                string line;
-                while ((line = reader.ReadLine()) != null)
+                parser.ReadLine(); // Skips the header
+
+                while (!parser.EndOfData)
                 {
-                    string[] parts = line.Split(',');
+                    string[] parts = parser.ReadFields();
 
                     if (parts.Length >= 3)
                     {
@@ -137,8 +141,11 @@ public class TooltipAppender : GlobalItem
 
     private string GetCurrentProgressionStage()
     {
+        // Default to Pre-Boss if no bosses have been defeated
         string currentStage = "Pre-Boss";
-        int mechanicalBossCount = 0;
+
+        // Will debug to include individual mech progression check and exo mechs/scal check
+       /* int mechanicalBossCount = 0;
         int calamityBossCount = 0;
 
         bool destroyerDefeated = IsBossDefeated("Destroyer");
@@ -176,7 +183,7 @@ public class TooltipAppender : GlobalItem
         {
             currentStage = "Endgame";
         }
-
+        */
         foreach (var boss in bossData)
         {
             string bossName = boss.Key;
@@ -201,8 +208,13 @@ public class TooltipAppender : GlobalItem
             string recommendation = recommendationData["Recommendation"];
             string currentProgression = GetCurrentProgressionStage();
             string itemClass = recommendationData["Class"];
+            string comment = recommendationData.ContainsKey("Comment") ? recommendationData["Comment"] : "";
 
-            string tooltipText = $"{recommendation} (Progression: {currentProgression}, Class: {itemClass})";
+            string tooltipText = $"{recommendation} (Current Progression: {currentProgression}, Class: {itemClass})";
+            if (!string.IsNullOrEmpty(comment))
+        {
+            tooltipText += $"\nNote: {comment}";
+        }
             TooltipLine line = new TooltipLine(Mod, "Recommended", tooltipText);
             tooltips.Add(line);
         }

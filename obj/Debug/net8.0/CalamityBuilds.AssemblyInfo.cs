@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("CalamityBuilds")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+fe9f45199f63d212b699706f949aed75113e8ba4")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+761eafe5922c536e4bff5e8471b2f4f01f015e05")]
 [assembly: System.Reflection.AssemblyProductAttribute("CalamityBuilds")]
 [assembly: System.Reflection.AssemblyTitleAttribute("CalamityBuilds")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

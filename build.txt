@@ -1,4 +1,4 @@
-displayName = CalamityBuilds
+displayName = Calamity Builds
 author = NubBlub
 modReferences = CalamityMod
-version = 0.20.2
+version = 0.3.4

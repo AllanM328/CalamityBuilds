@@ -6,6 +6,9 @@ The Hive Mind,Calamity,Pre-Skeletron
 The Perforators,Calamity,Pre-Skeletron
 Skeletron,Terraria,Pre-Wall of Flesh
 Wall of Flesh,Terraria,Pre-Mechanical Bosses
+The Destroyer,Terraria,Pre-Plantera
+The Twins,Terraria,Pre-Plantera
+Skeletron Prime,Terraria,Pre-Plantera
 Plantera,Terraria,Pre-Golem
 Golem,Terraria,Post-Golem
 Ravager,Calamity,Pre-Lunar Events
@@ -14,4 +17,6 @@ Moon Lord,Terraria,Pre-Providence
 "Providence, the Profaned Goddess",Calamity,Pre-Polterghast
 Polterghast,Calamity,Pre-Devourer of Gods
 Devourer of Gods,Calamity,Pre-Yharon
-"Yharon, Dragon of Rebirth",Calamity,"Pre-Exo Mechs/Supreme Witch, Calamitas"
+"Yharon, Dragon of Rebirth",Calamity,Pre-Exo Mechs/Supreme Calamitas
+Exo Mechs,Calamity,Pre-Supreme Calamitas
+"Supreme Witch, Calamitas",Calamity,Endgame
